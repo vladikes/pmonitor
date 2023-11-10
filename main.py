@@ -57,9 +57,32 @@ class MemoryLeakDetector:
 
     @staticmethod
     def detect(memory_usage):
+        return (
+            MemoryLeakDetector.simple_increase(memory_usage)
+            or MemoryLeakDetector.standard_deviation_method(memory_usage)
+            or MemoryLeakDetector.percentage_increase_method(memory_usage)
+        )
+
+    @staticmethod
+    def simple_increase(memory_usage):
         if len(memory_usage) < 3:
             return False
         return memory_usage[-1] > memory_usage[0]
+
+    @staticmethod
+    def standard_deviation_method(memory_usage, threshold=5):
+        if len(memory_usage) < 3:
+            return False
+        mean = sum(memory_usage) / len(memory_usage)
+        variance = sum((x - mean) ** 2 for x in memory_usage) / len(memory_usage)
+        return (variance**0.5) < threshold
+
+    @staticmethod
+    def percentage_increase_method(memory_usage, threshold=0.1):
+        if len(memory_usage) < 3:
+            return False
+        initial, final = memory_usage[0], memory_usage[-1]
+        return ((final - initial) / initial) > threshold
 
 
 class ProcessMonitor:
