@@ -12,7 +12,7 @@ def setup_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
@@ -38,22 +38,23 @@ def error_handler(func):
 
 class MemoryLeakDetector:
     """
-       A class used to detect memory leaks in a process based on its memory usage.
+    A class used to detect memory leaks in a process based on its memory usage.
 
-       Methods
-       -------
-       detect(memory_usage)
-           Determines if there is a potential memory leak based on the memory usage list.
+    Methods
+    -------
+    detect(memory_usage)
+        Determines if there is a potential memory leak based on the memory usage list.
 
-       simple_increase(memory_usage)
-           Checks if there is a simple increase in memory usage over time.
+    simple_increase(memory_usage)
+        Checks if there is a simple increase in memory usage over time.
 
-       standard_deviation_method(memory_usage, threshold=5)
-           Uses standard deviation to detect significant changes in memory usage that might indicate a leak.
+    standard_deviation_method(memory_usage, threshold=5)
+        Uses standard deviation to detect significant changes in memory usage that might indicate a leak.
 
-       percentage_increase_method(memory_usage, threshold=0.1)
-           Checks if the percentage increase in memory usage over time exceeds a given threshold.
-       """
+    percentage_increase_method(memory_usage, threshold=0.1)
+        Checks if the percentage increase in memory usage over time exceeds a given threshold.
+    """
+
     @staticmethod
     def detect(memory_usage):
         if len(memory_usage) < 3:
@@ -91,6 +92,7 @@ class ProcessMonitor:
     generate_report(report_name)
         Generates a CSV report with the collected metrics.
     """
+
     def __init__(self, identifier, duration, interval=5, by_pid=False):
         self.identifier = identifier
         self.duration = duration
@@ -110,8 +112,8 @@ class ProcessMonitor:
                 self.logger.error(f"No process found with PID: {self.identifier}")
                 return []
         else:
-            for proc in psutil.process_iter(['pid', 'name']):
-                if proc.info['name'] == self.identifier:
+            for proc in psutil.process_iter(["pid", "name"]):
+                if proc.info["name"] == self.identifier:
                     found_processes.append(proc)
             if not found_processes:
                 self.logger.error(f"No process found with name: {self.identifier}")
@@ -123,7 +125,7 @@ class ProcessMonitor:
         cpu_percent = process.cpu_percent(interval=1)
         memory_info = process.memory_full_info()
         memory_usage = memory_info.uss
-        num_fds = process.num_fds() if hasattr(process, 'num_fds') else 0
+        num_fds = process.num_fds() if hasattr(process, "num_fds") else 0
         return cpu_percent, memory_usage, num_fds
 
     def monitor(self):
@@ -141,7 +143,9 @@ class ProcessMonitor:
                     self.metrics.append(data)
                     self.memory_usage.append(data[1])
                 else:
-                    self.logger.warning(f"Process {process.pid} exited during monitoring.")
+                    self.logger.warning(
+                        f"Process {process.pid} exited during monitoring."
+                    )
             time.sleep(self.interval)
 
     def generate_report(self, report_name):
@@ -149,9 +153,9 @@ class ProcessMonitor:
             self.logger.warning("No data collected. Unable to generate report.")
             return
 
-        with open(report_name, 'w', newline='') as file:
+        with open(report_name, "w", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(['CPU %', 'Memory Usage', 'File Descriptors'])
+            writer.writerow(["CPU %", "Memory Usage", "File Descriptors"])
             writer.writerows(self.metrics)
 
         avg_cpu = sum(m[0] for m in self.metrics) / len(self.metrics)
@@ -176,12 +180,22 @@ def main():
     setup_logging()  # Set up logging configuration
 
     parser = argparse.ArgumentParser(description="Process Monitor")
-    parser.add_argument("identifier", type=str, help="Name or PID of the process to monitor")
+    parser.add_argument(
+        "identifier", type=str, help="Name or PID of the process to monitor"
+    )
     parser.add_argument("duration", type=int, help="Duration of monitoring in seconds")
-    parser.add_argument("--interval", type=int, default=5, help="Sampling interval in seconds")
-    parser.add_argument("--by_pid", action="store_true", help="Specify if the identifier is a PID")
-    parser.add_argument("--output", type=str, default=f"process_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                        help="Output report file name")
+    parser.add_argument(
+        "--interval", type=int, default=5, help="Sampling interval in seconds"
+    )
+    parser.add_argument(
+        "--by_pid", action="store_true", help="Specify if the identifier is a PID"
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default=f"process_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+        help="Output report file name",
+    )
     args = parser.parse_args()
 
     monitor = ProcessMonitor(args.identifier, args.duration, args.interval, args.by_pid)
