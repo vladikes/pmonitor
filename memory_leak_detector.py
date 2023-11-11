@@ -1,3 +1,6 @@
+from error_handler import error_handler
+
+
 class MemoryLeakDetector:
     """
     A class used to detect memory leaks in a process based on its memory usage.
@@ -5,11 +8,10 @@ class MemoryLeakDetector:
     Methods
     -------
     detect(memory_usage)
-        Determines if there is a potential memory leak based on the memory usage list.
-        only considers a memory if at least two out of the three methods indicate a leak
+        The detect method considers there to be a potential memory leak if any one of these three methods returns True.
 
     simple_increase(memory_usage)
-        Checks if there is a simple increase in memory usage over time.
+        checks if the last recorded memory usage is greater than the first recorded usage.
 
     standard_deviation_method(memory_usage, threshold=5)
         Uses standard deviation to detect significant changes in memory usage that might indicate a leak.
@@ -19,6 +21,7 @@ class MemoryLeakDetector:
     """
 
     @staticmethod
+    @error_handler
     def detect(memory_usage):
         return (
             MemoryLeakDetector.simple_increase(memory_usage)

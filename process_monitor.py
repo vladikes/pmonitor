@@ -1,9 +1,9 @@
-import csv
-import time
-
 import psutil
 import logging
+import time
+import csv
 from memory_leak_detector import MemoryLeakDetector
+from error_handler import error_handler
 
 
 class ProcessMonitor:
@@ -46,22 +46,17 @@ class ProcessMonitor:
         self.memory_usage = []
         self.logger = logging.getLogger(str(self.identifier))
 
+    @error_handler
     def find_process(self):
         found_processes = []
         if self.by_pid:
-            try:
-                return [psutil.Process(self.identifier)]
-            except psutil.NoSuchProcess:
-                self.logger.error(f"No process found with PID: {self.identifier}")
-                return []
-        else:
-            for proc in psutil.process_iter(["pid", "name"]):
-                if proc.info["name"] == self.identifier:
-                    found_processes.append(proc)
-            if not found_processes:
-                self.logger.error(f"No process found with name: {self.identifier}")
-            return found_processes
+            return [psutil.Process(self.identifier)]
+        for proc in psutil.process_iter(["pid", "name"]):
+            if proc.info["name"] == self.identifier:
+                found_processes.append(proc)
+        return found_processes
 
+    @error_handler
     def gather_metrics(self, process):
         self.logger.info(f"Gathering metrics for process: {process.pid}")
         cpu_percent = process.cpu_percent(interval=1)
@@ -84,10 +79,6 @@ class ProcessMonitor:
                 if data:
                     self.metrics.append(data)
                     self.memory_usage.append(data[1])
-                else:
-                    self.logger.warning(
-                        f"Process {process.pid} exited during monitoring."
-                    )
             time.sleep(self.interval)
 
     def generate_report(self, report_name):
