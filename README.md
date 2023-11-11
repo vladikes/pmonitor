@@ -39,3 +39,10 @@ python main.py "nginx" 60 --interval 10
 ## Output
 
 The script generates a CSV report with the collected metrics. The default output file is named 'process_report_<timestamp>.csv'.
+
+## Running Unit Tests
+This project uses pytest for unit testing. you can run the tests from the project's root directory:
+```
+pytest tests/
+```
+This command will discover and execute all the test cases in the tests/ directory.
